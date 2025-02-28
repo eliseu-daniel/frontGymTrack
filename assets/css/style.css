@@ -40,7 +40,7 @@ body {
 }
 
 .sidebar.active {
-    left: 0; /* Aparece quando ativo */
+    left: 1; /* Aparece quando ativo */
 }
 
 .sidebar h2 {
@@ -64,7 +64,7 @@ body {
 .toggle-btn {
     position: fixed; /* Fixo na tela */
     top: 10px;
-    left: 10px; /* Posição inicial */
+    left: 260px; /* Posição inicial */
     font-size: 24px;
     background: #2c3e50;
     color: white;
@@ -77,7 +77,7 @@ body {
 
 /* Ajuste quando o sidebar está ativo */
 .sidebar.active ~ .container .toggle-btn {
-    left: -250px; /* Move o botão para a direita quando o sidebar abre */
+    left: 260px; /* Move o botão para a direita quando o sidebar abre */
 }
 
 /* Conteúdo Principal */
