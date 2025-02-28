@@ -29,7 +29,7 @@ body {
 .sidebar {
     position: fixed;
     top: 0;
-    left: 250px; /* Escondido por padrão */
+    left: -250px; /* Escondido por padrão */
     width: 250px;
     height: 100%;
     background-color: #2c3e50;
@@ -40,7 +40,7 @@ body {
 }
 
 .sidebar.active {
-    left: 1; /* Aparece quando ativo */
+    left: 0; /* Aparece quando ativo */
 }
 
 .sidebar h2 {
@@ -64,7 +64,7 @@ body {
 .toggle-btn {
     position: fixed; /* Fixo na tela */
     top: 10px;
-    left: 260px; /* Posição inicial */
+    left: 10px; /* Posição inicial */
     font-size: 24px;
     background: #2c3e50;
     color: white;
