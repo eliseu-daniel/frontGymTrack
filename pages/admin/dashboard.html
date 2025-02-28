@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Dashboard</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <h2>Menu</h2>
+        <a href="./dashboard.html">Dashboard</a>
+        <a href="#">Gerenciar Usuários</a>
+        <a href="#">Configurações</a>
+        <a href="../../index.html">Sair</a>
+    </div>
+    <div class="container">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div class="main-content">
+            <h1>Bem-vindo, Admin</h1>
+            <section>
+                <h2>Gerenciamento de Usuários</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Tipo</th>
+                                <th>Plano</th>
+                                <th>Pagamento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosTable">
+                            <!-- Preenchido via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

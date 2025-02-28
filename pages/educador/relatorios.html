@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educador - Relatórios</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <!-- Incluindo Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <h2>Menu</h2>
+        <a href="./dashboard.html">Dashboard</a>
+        <a href="./pacientes.html">Pacientes</a>
+        <a href="./treinos.html">Treinos</a>
+        <a href="./dietas.html">Dietas</a>
+        <a href="./antropometria.html">Antropometria</a>
+        <a href="./relatorios.html">Relatórios</a>
+        <a href="../../index.html">Sair</a>
+    </div>
+    <div class="container">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div class="main-content">
+            <h1>Relatórios de Evolução</h1>
+            <section>
+                <h2>Selecionar Paciente</h2>
+                <form id="select-patient-form">
+                    <label for="paciente">Paciente:</label>
+                    <select id="paciente" name="paciente" onchange="loadReport()">
+                        <option value="">Selecione um paciente</option>
+                        <!-- Opções preenchidas via JS -->
+                    </select>
+                </form>
+            </section>
+            <section id="report-section" style="display: none;">
+                <h2>Evolução do Paciente</h2>
+                <div class="chart-container">
+                    <h3>Evolução de Peso</h3>
+                    <canvas id="weightChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Evolução de Calorias (Dieta)</h3>
+                    <canvas id="caloriesChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Evolução de Carga (Treino)</h3>
+                    <canvas id="loadChart"></canvas>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educador - Gestão de Treinos</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <h2>Menu</h2>
+        <a href="./dashboard.html">Dashboard</a>
+        <a href="./pacientes.html">Pacientes</a>
+        <a href="./treinos.html">Treinos</a>
+        <a href="./dietas.html">Dietas</a>
+        <a href="./antropometria.html">Antropometria</a>
+        <a href="./relatorios.html">Relatórios</a>
+        <a href="../../index.html">Sair</a>
+    </div>
+    <div class="container">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div class="main-content">
+            <h1>Gestão de Treinos</h1>
+            <section>
+                <h2>Criar Treino</h2>
+                <form>
+                    <label for="paciente">Paciente:</label>
+                    <select id="paciente" name="paciente" required>
+                        <option value="">Selecione um paciente</option>
+                        <!-- Preenchido via JavaScript -->
+                    </select>
+                    <label for="inicio">Data de Início:</label>
+                    <input type="date" id="inicio" name="inicio" required>
+                    <label for="tipo">Tipo de Treino:</label>
+                    <input type="text" id="tipo" name="tipo" required>
+                    <label for="grupo">Grupo Muscular:</label>
+                    <input type="text" id="grupo" name="grupo" required>
+                    <label for="series">Séries:</label>
+                    <input type="number" id="series" name="series" required>
+                    <label for="repeticoes">Repetições:</label>
+                    <input type="number" id="repeticoes" name="repeticoes" required>
+                    <label for="cargaInicial">Carga Inicial (kg):</label>
+                    <input type="number" id="cargaInicial" name="cargaInicial" required>
+                    <label for="cargaAtual">Carga Atual (kg):</label>
+                    <input type="number" id="cargaAtual" name="cargaAtual" required>
+                    <label for="descanso">Tempo de Descanso (segundos):</label>
+                    <input type="number" id="descanso" name="descanso" required>
+                    <label for="diaSemana">Dia da Semana:</label>
+                    <select id="diaSemana" name="diaSemana" required>
+                        <option value="Segunda">Segunda</option>
+                        <option value="Terça">Terça</option>
+                        <option value="Quarta">Quarta</option>
+                        <option value="Quinta">Quinta</option>
+                        <option value="Sexta">Sexta</option>
+                        <option value="Sábado">Sábado</option>
+                        <option value="Domingo">Domingo</option>
+                    </select>
+                    <label for="link">Link para Execução:</label>
+                    <input type="url" id="link" name="link" required>
+                    <label for="dataAtualizacao">Data da Última Atualização:</label>
+                    <input type="date" id="dataAtualizacao" name="dataAtualizacao" required>
+                    <button type="submit">Cadastrar</button>
+                </form>
+                <h2>Lista de Treinos</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Paciente</th>
+                                <th>Tipo</th>
+                                <th>Grupo</th>
+                                <th>Carga Atual</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="treinosTable">
+                            <!-- Preenchido via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="../../assets/js/script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const tbody = document.getElementById('treinosTable');
+            treinos.forEach(treino => {
+                const paciente = pacientes.find(p => p.id === treino.pacienteId);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${paciente.nome}</td>
+                    <td>${treino.tipo}</td>
+                    <td>${treino.grupo}</td>
+                    <td>${treino.cargaAtual}</td>
+                    <td>${treino.dataAtualizacao}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        });
+    </script>
+</body>
+</html>

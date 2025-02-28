@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Gerenciamento</title>
+    <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Login</h1>
+        <form id="loginForm" action="" method="POST" onsubmit="handleLogin(event)">
+            <label for="tipoUsuario">Tipo de Usuário:</label>
+            <select id="tipoUsuario" name="tipoUsuario" required>
+                <option value="">Selecione o tipo</option>
+                <option value="admin">Admin</option>
+                <option value="educador">Educador</option>
+                <option value="paciente">Paciente</option>
+            </select>
+
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" name="email" required>
+            <label for="password">Senha:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+    <script src="./assets/js/script.js"></script>
+</body>
+</html>

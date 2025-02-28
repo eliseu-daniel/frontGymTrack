@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paciente - Meu Progresso</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <h2>Menu</h2>
+        <a href="./index.html">Dashboard</a>
+        <a href="./treinos.html">Meus Treinos</a>
+        <a href="./dietas.html">Minhas Dietas</a>
+        <a href="./progresso.html">Meu Progresso</a>
+        <a href="./feedbacks.html">Meus Feedbacks</a>
+    </div>
+    <div class="container">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div class="main-content">
+            <h1>Meu Progresso</h1>
+            <section class="section-block">
+                <h2>Registrar Progresso</h2>
+                <form id="progressForm">
+                    <label for="tipoProgresso">Tipo de Progresso:</label>
+                    <select id="tipoProgresso" name="tipoProgresso" required>
+                        <option value="peso">Peso (kg)</option>
+                        <option value="carga">Carga (kg)</option>
+                    </select>
+                    <label for="valor">Valor:</label>
+                    <input type="number" id="valor" name="valor" step="0.1" required>
+                    <label for="data">Data:</label>
+                    <input type="date" id="data" name="data" required>
+                    <button type="submit">Registrar</button>
+                </form>
+            </section>
+            <section class="section-block">
+                <h2>Evolução</h2>
+                <div class="chart-container">
+                    <h3>Evolução de Peso</h3>
+                    <canvas id="weightProgressChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Evolução de Carga</h3>
+                    <canvas id="loadProgressChart"></canvas>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="../../assets/js/script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const pacienteId = usuarioLogado?.id || 1; // Usuário logado (João Silva por padrão)
+
+            // Salvar progresso
+            document.getElementById('progressForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (validateForm(e.target)) {
+                    const tipo = e.target.querySelector('#tipoProgresso').value;
+                    const valor = parseFloat(e.target.querySelector('#valor').value);
+                    const data = e.target.querySelector('#data').value;
+                    progresso.push({ pacienteId, tipo, valor, data });
+                    alert("Progresso registrado com sucesso!");
+                    e.target.reset();
+                    loadProgressCharts(); // Atualizar gráficos
+                }
+            });
+
+            loadProgressCharts();
+        });
+
+        function loadProgressCharts() {
+            const pacienteId = usuarioLogado?.id || 1;
+            const pesoProgresso = progresso.filter(p => p.pacienteId === pacienteId && p.tipo === "peso");
+            const cargaProgresso = progresso.filter(p => p.pacienteId === pacienteId && p.tipo === "carga");
+            const datas = [...pesoProgresso, ...cargaProgresso].map(p => p.data).sort();
+
+            const weightCtx = document.getElementById("weightProgressChart")?.getContext("2d");
+            if (weightCtx) {
+                new Chart(weightCtx, {
+                    type: "line",
+                    data: {
+                        labels: datas,
+                        datasets: [{
+                            label: "Peso (kg)",
+                            data: pesoProgresso.map(p => p.valor),
+                            borderColor: "#2c3e50",
+                            fill: false
+                        }]
+                    },
+                    options: { scales: { y: { beginAtZero: false } } }
+                });
+            }
+
+            const loadCtx = document.getElementById("loadProgressChart")?.getContext("2d");
+            if (loadCtx) {
+                new Chart(loadCtx, {
+                    type: "line",
+                    data: {
+                        labels: datas,
+                        datasets: [{
+                            label: "Carga (kg)",
+                            data: cargaProgresso.map(p => p.valor),
+                            borderColor: "#e74c3c",
+                            fill: false
+                        }]
+                    },
+                    options: { scales: { y: { beginAtZero: false } } }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

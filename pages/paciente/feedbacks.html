@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paciente - Meus Feedbacks</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <h2>Menu</h2>
+        <a href="./index.html">Dashboard</a>
+        <a href="./treinos.html">Meus Treinos</a>
+        <a href="./dietas.html">Minhas Dietas</a>
+        <a href="./progresso.html">Meu Progresso</a>
+        <a href="./feedbacks.html">Meus Feedbacks</a>
+    </div>
+    <div class="container">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div class="main-content">
+            <h1>Meus Feedbacks</h1>
+            <section class="section-block">
+                <h2>Lista de Feedbacks</h2>
+                <div id="feedbacksList" class="feedback-container"></div>
+                <h3>Deixar Feedback</h3>
+                <form id="feedbackForm">
+                    <label for="tipoFeedback">Sobre:</label>
+                    <select id="tipoFeedback" name="tipoFeedback" required>
+                        <option value="treino">Treino</option>
+                        <option value="dieta">Dieta</option>
+                    </select>
+                    <label for="itemId">Item (ID):</label>
+                    <input type="number" id="itemId" name="itemId" required>
+                    <label for="comentario">Comentário:</label>
+                    <textarea id="comentario" name="comentario" required></textarea>
+                    <button type="submit">Enviar</button>
+                </form>
+            </section>
+        </div>
+    </div>
+    <script src="../../assets/js/script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const pacienteId = usuarioLogado?.id || 1; // Usuário logado (João Silva por padrão)
+
+            // Salvar feedback
+            document.getElementById('feedbackForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (validateForm(e.target)) {
+                    const tipo = e.target.querySelector('#tipoFeedback').value;
+                    const itemId = parseInt(e.target.querySelector('#itemId').value);
+                    const comentario = e.target.querySelector('#comentario').value;
+                    const data = new Date().toISOString().split('T')[0];
+                    feedbacks.push({ pacienteId, [tipo + 'Id']: itemId, comentario, data });
+                    alert("Feedback enviado com sucesso!");
+                    e.target.reset();
+                    updateFeedbacks();
+                }
+            });
+
+            updateFeedbacks();
+        });
+
+        function updateFeedbacks() {
+            const pacienteId = usuarioLogado?.id || 1;
+            const feedbacksList = document.getElementById('feedbacksList');
+            if (!feedbacksList) return;
+            feedbacksList.innerHTML = '';
+            feedbacks.filter(f => f.pacienteId === pacienteId).forEach(feedback => {
+                feedbacksList.innerHTML += `
+                    <div class="feedback-item">
+                        <p><strong>${feedback.comentario}</strong></p>
+                        <p>Data: ${feedback.data}</p>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>

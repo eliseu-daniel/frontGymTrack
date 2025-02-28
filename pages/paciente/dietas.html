@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paciente - Minhas Dietas</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <h2>Menu</h2>
+        <a href="./index.html">Dashboard</a>
+        <a href="./treinos.html">Meus Treinos</a>
+        <a href="./dietas.html">Minhas Dietas</a>
+        <a href="./progresso.html">Meu Progresso</a>
+        <a href="./feedbacks.html">Meus Feedbacks</a>
+    </div>
+    <div class="container">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div class="main-content">
+            <h1>Minhas Dietas</h1>
+            <section class="section-block">
+                <h2>Lista de Dietas</h2>
+                <div id="dietasList"></div>
+            </section>
+        </div>
+    </div>
+    <script src="../../assets/js/script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const pacienteId = usuarioLogado?.id || 1; // Usuário logado (João Silva por padrão)
+            const dietasList = document.getElementById('dietasList');
+            dietas.filter(d => d.pacienteId === pacienteId).forEach(dieta => {
+                dietasList.innerHTML += `<p>Dieta: ${dieta.tipo} - ${dieta.refeicao} (${dieta.calorias}kcal), Horário: ${dieta.horario}</p>`;
+            });
+        });
+    </script>
+</body>
+</html>
