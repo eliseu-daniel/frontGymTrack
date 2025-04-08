@@ -1,0 +1,43 @@
+*{
+    margin: 0;
+}
+
+.namePrincipal{
+    background-color: #D8D8D8;
+}
+
+.form{
+    display: flex;
+    justify-content: end;
+}
+
+.form-inputs{
+    flex-direction: column;
+    justify-content: center;
+    width: 600px;
+    height: 100vh;
+    background-color: #28a745b3;
+    color: #FFFF;
+}
+
+label{
+    margin: 5px;
+}
+
+h1, a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #FFFF;
+}
+
+input[type=email], input[type=password], input[type=submit]{
+    border-radius: 5px;
+    margin: 15px 5px;
+    padding: 15px;
+}
+
+input[type=submit]{
+    background-color: #28a745;
+    color: #FFFF;
+}
