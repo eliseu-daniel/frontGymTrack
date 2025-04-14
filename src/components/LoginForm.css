@@ -3,12 +3,16 @@
 }
 
 .namePrincipal{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background-color: #D8D8D8;
+    color: #FFFF;
 }
 
 .form{
     display: flex;
-    justify-content: end;
+    justify-content: flex-end;
 }
 
 .form-inputs{
@@ -17,17 +21,29 @@
     width: 600px;
     height: 100vh;
     background-color: #28a745b3;
-    color: #FFFF;
+    
 }
 
-label{
-    margin: 5px;
+label, a{
+    margin: 3px;
+    font-size: 22px;
 }
 
-h1, a {
+.titulo{
+    font-size: 110px;
+    margin-left: 300px;
+}
+
+.sub-titulo{
     display: flex;
     justify-content: center;
-    align-items: center;
+    background-color: red ;
+    width: 600px;
+}
+
+.sub{
+    display: flex;
+    justify-content: center;
     color: #FFFF;
 }
 
@@ -40,4 +56,5 @@ input[type=email], input[type=password], input[type=submit]{
 input[type=submit]{
     background-color: #28a745;
     color: #FFFF;
+    font-size: 18px;
 }
