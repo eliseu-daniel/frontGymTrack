@@ -4,7 +4,9 @@ import './LoginForm.css'
 export function LoginForm() {
     return (
         <div className="namePrincipal">
-            <h1 className="titulo">GYMTRACK</h1>
+            <div className="titulo">
+                <h1>GYMTRACK</h1>
+            </div>
             <main className="form">
                 <div className="form form-inputs">
                     <div className="sub-titulo">
