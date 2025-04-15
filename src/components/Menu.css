@@ -1,0 +1,33 @@
+*{
+    margin: 0;
+}
+
+.menu{
+    background-color: #28a745b3;
+    width: 300px;
+    height: 100vh;
+}
+
+.buttonSidebar{
+    display: flex;
+    background-color: red;
+}
+
+img{
+    color:#FFFF;
+    width: 60px;
+    margin: 10px;
+}
+
+.nav{
+    display: flex;
+    flex-direction: column ;
+    justify-content: center;
+    align-items: stretch;
+}
+
+a, li{
+    text-decoration: none;
+    color: black;
+    padding: 10px;
+}

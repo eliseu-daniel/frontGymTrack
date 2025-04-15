@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { LoginForm } from './components/LoginForm'
 import './App.css'
+import { Menu } from './components/Menu'
 
 function App() {
 
 return(
   <>
-    <LoginForm />
+    {/* <LoginForm /> */}
+    <Menu/>
   </>
 )
 
