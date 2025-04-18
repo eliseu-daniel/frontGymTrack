@@ -8,7 +8,7 @@ export function Menu() {
                 <a className="iconSidebar" href="sidebar">
                     <img src="././public/icon/menu-bar.svg" alt="menu bar" />   
                 </a>
-                <h1>MENU</h1>
+                <h1 className="buttonSidebar h1">MENU</h1>
             </div>
             <div className="nav">
                 <ul>
