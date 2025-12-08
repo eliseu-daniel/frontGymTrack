@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+body {
+    @apply bg-bgLight text-textDark;
+}
+
+
+.card {
+    @apply bg-white p-4 rounded-xl shadow-md;
+}
+
+
+.sidebar-item {
+    @apply flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer hover:bg-primary hover:text-white transition;
+}
