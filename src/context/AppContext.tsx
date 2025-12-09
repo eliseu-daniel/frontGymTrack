@@ -33,7 +33,7 @@ const AppContext = createContext<AppContextType>({} as AppContextType);
 export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>({
         id: 1,
-        nome: "Administrador",
+        nome: "Eliseu",
         email: "admin@synchrofit.com",
     });
 

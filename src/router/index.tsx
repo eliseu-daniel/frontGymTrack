@@ -10,7 +10,7 @@ export default function AppRouter() {
             <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/pacientes" element={<Pacientes />} />
-                <Route path="/novo-treino" element={<NovoTreino />} />
+                <Route path="/treinos" element={<NovoTreino />} />
             </Routes>
         </BrowserRouter>
     );

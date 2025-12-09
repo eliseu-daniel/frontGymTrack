@@ -1,18 +1,58 @@
-@tailwind base;
-@tailwind components;
+@import "tailwindcss";
+@import "tailwindcss/preflight";
+@import "./tokens.css";
+
 @tailwind utilities;
 
-
 body {
-    @apply bg-bgLight text-textDark;
+    @apply bg-bgGray text-textDark;
 }
 
+.logo {
+    @apply w-9 h-9 mr-2 inline-block rounded-2xl;
+}
+
+.flex-css {
+    @apply flex;
+}
+
+.header-principal {
+    @apply flex w-full h-screen flex-col;
+
+}
+
+.user-name {
+    @apply flex items-center text-lg font-bold p-8 gap-2;
+}
+
+.card-principal {
+    @apply flex flex-wrap justify-evenly w-full pt-20;
+}
 
 .card {
-    @apply bg-white p-4 rounded-xl shadow-md;
+    @apply bg-white p-12 rounded-xl shadow-md;
 }
 
+.card-text {
+    @apply text-center text-lg font-semibold text-textDark;
+}
+
+.card-text-number {
+    @apply text-3xl;
+}
+
+.siderbar {
+    @apply w-64 h-screen bg-secondary text-white p-4 flex flex-col gap-4;
+}
+
+.sidebar-header {
+    @apply flex items-center mb-6 pl-2;
+}
 
 .sidebar-item {
     @apply flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer hover:bg-primary hover:text-white transition;
+}
+
+.icon-sidebar {
+    @apply w-7 h-7 rounded bg-bgLight;
 }
