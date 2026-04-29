@@ -1,0 +1,7 @@
+.table {
+    @apply w-full text-sm;
+}
+
+.tr{
+    @apply bg-sf-green;
+}
