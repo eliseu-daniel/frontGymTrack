@@ -4,10 +4,7 @@ import { api } from "../services/api";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(false);
-
-  useEffect(() => {
+  const [user, setUser] = useState(() => {
     const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
 
@@ -17,12 +14,15 @@ export function AuthProvider({ children }) {
 
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        return JSON.parse(savedUser);
       } catch (error) {
         localStorage.removeItem("user");
+        return null;
       }
     }
-  }, []);
+    return null;
+  });
+  const [authLoading, setAuthLoading] = useState(false);
 
   async function login(email, senha) {
     try {
