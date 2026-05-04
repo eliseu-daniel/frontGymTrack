@@ -39,6 +39,7 @@ export default function DietCreate() {
       measure: "gr",
       others: "",
       send_notification: false,
+      addedFoods: [],
     },
   ]);
 
@@ -118,8 +119,58 @@ export default function DietCreate() {
         measure: "gr",
         others: "",
         send_notification: false,
+        addedFoods: [],
       },
     ]);
+  }
+
+  function addFoodToItem(itemIndex) {
+    setItems((prev) =>
+      prev.map((item, i) =>
+        i === itemIndex
+          ? {
+              ...item,
+              addedFoods: [
+                ...item.addedFoods,
+                {
+                  food_id: "",
+                  quantity: "",
+                  measure: "gr",
+                  others: "",
+                },
+              ],
+            }
+          : item
+      )
+    );
+  }
+
+  function updateAddedFood(itemIndex, foodIndex, field, value) {
+    setItems((prev) =>
+      prev.map((item, i) =>
+        i === itemIndex
+          ? {
+              ...item,
+              addedFoods: item.addedFoods.map((food, f) =>
+                f === foodIndex ? { ...food, [field]: value } : food
+              ),
+            }
+          : item
+      )
+    );
+  }
+
+  function removeAddedFood(itemIndex, foodIndex) {
+    setItems((prev) =>
+      prev.map((item, i) =>
+        i === itemIndex
+          ? {
+              ...item,
+              addedFoods: item.addedFoods.filter((_, f) => f !== foodIndex),
+            }
+          : item
+      )
+    );
   }
 
   function removeItem(index) {
@@ -260,6 +311,25 @@ export default function DietCreate() {
         };
 
         await api.post("/educators/diet-items", itemPayload);
+
+        // Salvar os alimentos adicionados com a mesma refeição
+        if (item.addedFoods && item.addedFoods.length > 0) {
+          for (const addedFood of item.addedFoods) {
+            const addedFoodPayload = {
+              diet_id: Number(dietId),
+              food_id: Number(addedFood.food_id),
+              meals_id: Number(item.meals_id),
+              meal_time: item.meal_time,
+              quantity: Number(addedFood.quantity),
+              measure: addedFood.measure,
+              others: addedFood.others || null,
+              send_notification: 0,
+              is_active: true,
+            };
+
+            await api.post("/educators/diet-items", addedFoodPayload);
+          }
+        }
       }
 
       alert("Dieta cadastrada com sucesso!");
@@ -329,6 +399,7 @@ export default function DietCreate() {
               <label className="mb-1 block text-base font-serif">Calorias</label>
               <input
                 type="number"
+                max="10000"
                 value={form.calories}
                 onChange={(e) => setField("calories", e.target.value)}
                 className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
@@ -353,6 +424,7 @@ export default function DietCreate() {
               </label>
               <input
                 type="number"
+                max="5000"
                 value={form.carbohydrates}
                 onChange={(e) => setField("carbohydrates", e.target.value)}
                 className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
@@ -365,6 +437,7 @@ export default function DietCreate() {
               </label>
               <input
                 type="number"
+                max="5000"
                 value={form.proteins}
                 onChange={(e) => setField("proteins", e.target.value)}
                 className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
@@ -375,6 +448,7 @@ export default function DietCreate() {
               <label className="mb-1 block text-base font-serif">Gorduras</label>
               <input
                 type="number"
+                max="5000"
                 value={form.fats}
                 onChange={(e) => setField("fats", e.target.value)}
                 className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
@@ -538,6 +612,119 @@ export default function DietCreate() {
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
                       placeholder="Outro"
                     />
+                  </div>
+
+                  {item.addedFoods && item.addedFoods.length > 0 && (
+                    <div className="md:col-span-2">
+                      {item.addedFoods.map((food, foodIndex) => (
+                        <div key={foodIndex} className="grid grid-cols-1 gap-4 md:grid-cols-2 border-t border-gray-300 pt-4 mt-4">
+                          <div>
+                            <label className="mb-1 block text-base font-serif">
+                              Alimento
+                            </label>
+                            <select
+                              value={food.food_id}
+                              onChange={(e) =>
+                                updateAddedFood(
+                                  index,
+                                  foodIndex,
+                                  "food_id",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                            >
+                              <option value="">Selecionar Alimento</option>
+                              {foods.map((f) => (
+                                <option key={f.id} value={f.id}>
+                                  {f.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-base font-serif">
+                              Und / Gr / Ml / L
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                              <input
+                                type="number"
+                                value={food.quantity}
+                                onChange={(e) =>
+                                  updateAddedFood(
+                                    index,
+                                    foodIndex,
+                                    "quantity",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                                placeholder="Quantidade"
+                              />
+                              <select
+                                value={food.measure}
+                                onChange={(e) =>
+                                  updateAddedFood(
+                                    index,
+                                    foodIndex,
+                                    "measure",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                              >
+                                <option value="und">und</option>
+                                <option value="gr">gr</option>
+                                <option value="ml">ml</option>
+                                <option value="l">l</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div className="md:col-span-2">
+                            <label className="mb-1 block text-base font-serif">
+                              Outro
+                            </label>
+                            <input
+                              type="text"
+                              value={food.others}
+                              onChange={(e) =>
+                                updateAddedFood(
+                                  index,
+                                  foodIndex,
+                                  "others",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                              placeholder="Outro"
+                            />
+                          </div>
+
+                          <div className="flex justify-end md:col-span-2">
+                            <button
+                              type="button"
+                              onClick={() => removeAddedFood(index, foodIndex)}
+                              className="rounded-md border border-red-500 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
+                            >
+                              Remover alimento
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="md:col-span-2">
+                    <button
+                      type="button"
+                      onClick={() => addFoodToItem(index)}
+                      className="mt-4 flex h-10 w-10 items-center justify-center rounded-full bg-sf-greenDark text-xl text-white hover:bg-sf-green"
+                      title="Adicionar alimento"
+                    >
+                      +
+                    </button>
                   </div>
 
                   <div className="md:col-span-2">
