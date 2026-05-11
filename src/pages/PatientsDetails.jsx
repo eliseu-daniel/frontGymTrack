@@ -18,14 +18,14 @@ return (
 
         <div className="flex flex-col gap-4">
           <div className="flex gap-4">
-            <div className="w-80">
+            <div className="w-full">
               <label className="mb-1 block text-base font-serif">
                 Treino
               </label>
               <textarea className="min-h-[100px] w-full rounded-md border border-gray-300 bg-white px-3 py-2" />
             </div>
 
-            <div className="w-80">
+            <div className="w-full">
               <label className="mb-1 block text-base font-serif">
                 Dieta
               </label>
