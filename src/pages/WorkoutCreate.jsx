@@ -20,16 +20,20 @@ export default function WorkoutCreate() {
     finalized_at: "",
   });
 
+  const EMPTY_EXERCISE = {
+    exercise_id: "",
+    series: "",
+    repetitions: "",
+    weight_load: "",
+    rest_time: "",
+    duration_time: "",
+    send_notification: false,
+  };
+
   const [items, setItems] = useState([
     {
-      exercise_id: "",
-      series: "",
-      repetitions: "",
-      weight_load: "",
-      rest_time: "",
-      duration_time: "",
       day_of_week: "1",
-      send_notification: false,
+      exercises: [{ ...EMPTY_EXERCISE }],
     },
   ]);
 
@@ -364,6 +368,25 @@ export default function WorkoutCreate() {
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                    <Field label="Dia da Semana">
+                      <select
+                        value={item.day_of_week}
+                        onChange={(e) =>
+                          updateItem(index, "day_of_week", e.target.value)
+                        }
+                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                      >
+                        <option value="1">Segunda</option>
+                        <option value="2">Terça</option>
+                        <option value="3">Quarta</option>
+                        <option value="4">Quinta</option>
+                        <option value="5">Sexta</option>
+                        <option value="6">Sábado</option>
+                        <option value="7">Domingo</option>
+                      </select>
+                    </Field>
+
                     <Field label="Exercício">
                       <select
                         value={item.exercise_id}
@@ -459,24 +482,6 @@ export default function WorkoutCreate() {
                       />
                     </Field>
 
-                    <Field label="Dia da Semana">
-                      <select
-                        value={item.day_of_week}
-                        onChange={(e) =>
-                          updateItem(index, "day_of_week", e.target.value)
-                        }
-                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                      >
-                        <option value="1">Segunda</option>
-                        <option value="2">Terça</option>
-                        <option value="3">Quarta</option>
-                        <option value="4">Quinta</option>
-                        <option value="5">Sexta</option>
-                        <option value="6">Sábado</option>
-                        <option value="7">Domingo</option>
-                      </select>
-                    </Field>
-
                     <div className="md:col-span-2">
                       <Field label="Link">
                         <input
@@ -488,6 +493,17 @@ export default function WorkoutCreate() {
                         />
                       </Field>
                     </div>
+
+                     <div className="md:col-span-2">
+                    <button
+                      type="button"
+                      onClick={() => addWorkoutToItem(index)}
+                      className="mt-4 flex h-10 w-10 items-center justify-center rounded-full bg-sf-greenDark text-xl text-white hover:bg-sf-green"
+                      title="Adicionar exercício"
+                    >
+                      +
+                    </button>
+                  </div>
 
                     <div className="md:col-span-2">
                       <label className="text-base font-serif">
@@ -506,6 +522,7 @@ export default function WorkoutCreate() {
                         Enviar notificação ao paciente
                       </label>
                     </div>
+                    
                   </div>
 
                   <div className="flex justify-end pt-4">
@@ -517,6 +534,7 @@ export default function WorkoutCreate() {
                       Remover item
                     </button>
                   </div>
+                  
                 </div>
               );
             })}
