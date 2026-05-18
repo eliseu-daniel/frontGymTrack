@@ -99,6 +99,8 @@ export default function Patients() {
       });
   }, [patients, hiddenPatientIds, registrationsByPatientId]);
 
+  const patientIds = orderedPatients.map((p) => p.id ?? p.patient_id);
+
   const rows = orderedPatients.map((p) => {
     const patientId = p.id ?? p.patient_id;
     const registration = registrationsByPatientId[String(patientId)];
@@ -138,6 +140,10 @@ export default function Patients() {
     ];
   });
 
+  const handleRowClick = (patientId) => {
+    nav(`/pacientes/details?id=${patientId}`);
+  };
+
   return (
     <div>
       <h1 className="text-center font-serif text-4xl uppercase tracking-wide mb-4">
@@ -157,7 +163,12 @@ export default function Patients() {
         {loading || registrationsLoading ? (
           <div className="text-[12px]">Carregando...</div>
         ) : (
-          <Table columns={columns} rows={rows} />
+          <Table
+            columns={columns}
+            rows={rows}
+            rowIds={patientIds}
+            onRowClick={handleRowClick}
+          />
         )}
       </div>
     </div>
