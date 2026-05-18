@@ -15,6 +15,7 @@ const EMPTY_ITEM = {
   measure: "gr",
   others: "",
   send_notification: false,
+  addedFoods: [],
 };
 
 export default function DietEdit() {
@@ -149,6 +150,7 @@ export default function DietEdit() {
             send_notification: normalizeSendNotification(
               dietItem.send_notification
             ),
+            addedFoods: [],
           }))
         );
       } else {
@@ -183,7 +185,68 @@ export default function DietEdit() {
   }
 
   function addItem() {
-    setItems((prev) => [...prev, { ...EMPTY_ITEM }]);
+    setItems((prev) => [
+      ...prev,
+      {
+        meals_id: "",
+        food_id: "",
+        meal_time: "",
+        quantity: "",
+        measure: "gr",
+        others: "",
+        send_notification: false,
+        addedFoods: [],
+      },
+    ]);
+  }
+
+  function addFoodToItem(itemIndex) {
+    setItems((prev) =>
+      prev.map((item, i) =>
+        i === itemIndex
+          ? {
+              ...item,
+              addedFoods: [
+                ...item.addedFoods,
+                {
+                  food_id: "",
+                  quantity: "",
+                  measure: "gr",
+                  others: "",
+                },
+              ],
+            }
+          : item
+      )
+    );
+  }
+
+  function updateAddedFood(itemIndex, foodIndex, field, value) {
+    setItems((prev) =>
+      prev.map((item, i) =>
+        i === itemIndex
+          ? {
+              ...item,
+              addedFoods: item.addedFoods.map((food, f) =>
+                f === foodIndex ? { ...food, [field]: value } : food
+              ),
+            }
+          : item
+      )
+    );
+  }
+
+  function removeAddedFood(itemIndex, foodIndex) {
+    setItems((prev) =>
+      prev.map((item, i) =>
+        i === itemIndex
+          ? {
+              ...item,
+              addedFoods: item.addedFoods.filter((_, f) => f !== foodIndex),
+            }
+          : item
+      )
+    );
   }
 
   function removeItem(index) {
@@ -328,6 +391,24 @@ export default function DietEdit() {
         } else {
           await api.post("/educators/diet-items", itemPayload);
         }
+
+        if (item.addedFoods && item.addedFoods.length > 0) {
+          for (const addedFood of item.addedFoods) {
+            const addedFoodPayload = {
+              diet_id: Number(id),
+              food_id: Number(addedFood.food_id),
+              meals_id: Number(item.meals_id),
+              meal_time: item.meal_time,
+              quantity: Number(addedFood.quantity),
+              measure: addedFood.measure,
+              others: addedFood.others || null,
+              send_notification: 0,
+              is_active: true,
+            };
+
+            await api.post("/educators/diet-items", addedFoodPayload);
+          }
+        }
       }
 
       setRemovedItemIds([]);
@@ -357,6 +438,21 @@ export default function DietEdit() {
       </div>
     );
   }
+
+  const groupedItems = items.reduce((acc, item, index) => {
+    const mealId = item.meals_id || "sem-refeicao";
+
+    if (!acc[mealId]) {
+      acc[mealId] = [];
+    }
+
+    acc[mealId].push({
+      ...item,
+      originalIndex: index,
+    });
+
+    return acc;
+  }, {});
 
   return (
     <div>
@@ -504,16 +600,24 @@ export default function DietEdit() {
             </button>
           </div>
 
-          {items.map((item, index) => (
-            <div
-              key={item.diet_item_id ?? index}
-              className="mb-6 rounded-md border border-gray-300 p-4 last:mb-0"
-            >
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
+          {Object.entries(groupedItems).map(([mealId, mealItems]) => {
+  const mealName =
+    meals.find((meal) => String(meal.id) === String(mealId))?.name ||
+    "Sem refeição";
+
+  return (
+    <div
+      key={mealId}
+      className="mb-6 rounded-md border border-gray-300 p-4"
+    >
+      {/* <h2 className="mb-6 text-xl font-bold text-sf-greenDark border-b pb-2">
+        {mealName}
+      </h2> */}
+
+       <div>
                   <label className="mb-1 block text-base font-serif">Refeição</label>
                   <select
-                    value={item.meals_id}
+                    value={mealId}
                     onChange={(e) =>
                       setItemField(index, "meals_id", e.target.value)
                     }
@@ -528,111 +632,216 @@ export default function DietEdit() {
                   </select>
                 </div>
 
-                <div>
-                  <label className="mb-1 block text-base font-serif">
-                    Horário da Refeição
-                  </label>
+      {mealItems.map((item) => {
+        const index = item.originalIndex;
+
+        return (
+          <div
+            key={item.diet_item_id ?? index}
+            className="mb-6 rounded-md border border-gray-200 p-4"
+          >
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+              <div>
+                <label className="mb-1 block text-base font-serif">
+                  Horário da Refeição
+                </label>
+                <input
+                  type="time"
+                  value={item.meal_time}
+                  onChange={(e) =>
+                    setItemField(index, "meal_time", e.target.value)
+                  }
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-base font-serif">
+                  Alimento
+                </label>
+                <select
+                  value={item.food_id}
+                  onChange={(e) =>
+                    setItemField(index, "food_id", e.target.value)
+                  }
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                >
+                  <option value="">Selecionar Alimento</option>
+                  {foods.map((food) => (
+                    <option key={food.id} value={food.id}>
+                      {food.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-base font-serif">
+                  Und / Gr / Ml / L
+                </label>
+                <div className="grid grid-cols-2 gap-3">
                   <input
-                    type="time"
-                    value={item.meal_time}
+                    type="number"
+                    value={item.quantity}
                     onChange={(e) =>
-                      setItemField(index, "meal_time", e.target.value)
+                      setItemField(index, "quantity", e.target.value)
                     }
                     className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                    placeholder="Quantidade"
                   />
-                </div>
 
-                <div>
-                  <label className="mb-1 block text-base font-serif">Alimento</label>
                   <select
-                    value={item.food_id}
+                    value={item.measure}
                     onChange={(e) =>
-                      setItemField(index, "food_id", e.target.value)
+                      setItemField(index, "measure", e.target.value)
                     }
                     className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
                   >
-                    <option value="">Selecionar Alimento</option>
-                    {foods.map((food) => (
-                      <option key={food.id} value={food.id}>
-                        {food.name}
-                      </option>
-                    ))}
+                    <option value="und">und</option>
+                    <option value="gr">gr</option>
+                    <option value="ml">ml</option>
+                    <option value="l">l</option>
                   </select>
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-base font-serif">
-                    Und / Gr / Ml / L
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) =>
-                        setItemField(index, "quantity", e.target.value)
-                      }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                      placeholder="Quantidade"
-                    />
-
-                    <select
-                      value={item.measure}
-                      onChange={(e) =>
-                        setItemField(index, "measure", e.target.value)
-                      }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                    >
-                      <option value="und">und</option>
-                      <option value="gr">gr</option>
-                      <option value="ml">ml</option>
-                      <option value="l">l</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="mb-1 block text-base font-serif">Outro</label>
-                  <input
-                    type="text"
-                    value={item.others}
-                    onChange={(e) =>
-                      setItemField(index, "others", e.target.value)
-                    }
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                    placeholder="Outro"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="text-base font-serif">
-                    <input
-                      type="checkbox"
-                      checked={item.send_notification}
-                      onChange={(e) =>
-                        setItemField(
-                          index,
-                          "send_notification",
-                          e.target.checked
-                        )
-                      }
-                      className="mr-2 h-4 w-4"
-                    />
-                    Enviar notificação ao paciente
-                  </label>
                 </div>
               </div>
 
-              <div className="flex justify-end pt-4">
+              <div className="md:col-span-2">
+                <label className="mb-1 block text-base font-serif">
+                  Outro
+                </label>
+                <input
+                  type="text"
+                  value={item.others}
+                  onChange={(e) =>
+                    setItemField(index, "others", e.target.value)
+                  }
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                />
+              </div>
+
+              {item.addedFoods?.length > 0 && (
+                <div className="md:col-span-2">
+                  {item.addedFoods.map((food, foodIndex) => (
+                    <div
+                      key={foodIndex}
+                      className="grid grid-cols-1 gap-4 md:grid-cols-2 border-t border-gray-300 pt-4 mt-4"
+                    >
+                      <div>
+                        <label className="mb-1 block text-base font-serif">
+                          Alimento
+                        </label>
+                        <select
+                          value={food.food_id}
+                          onChange={(e) =>
+                            updateAddedFood(
+                              index,
+                              foodIndex,
+                              "food_id",
+                              e.target.value
+                            )
+                          }
+                          className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                        >
+                          <option value="">Selecionar Alimento</option>
+                          {foods.map((f) => (
+                            <option key={f.id} value={f.id}>
+                              {f.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-base font-serif">
+                          Quantidade
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <input
+                            type="number"
+                            value={food.quantity}
+                            onChange={(e) =>
+                              updateAddedFood(
+                                index,
+                                foodIndex,
+                                "quantity",
+                                e.target.value
+                              )
+                            }
+                            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                          />
+
+                          <select
+                            value={food.measure}
+                            onChange={(e) =>
+                              updateAddedFood(
+                                index,
+                                foodIndex,
+                                "measure",
+                                e.target.value
+                              )
+                            }
+                            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                          >
+                            <option value="und">und</option>
+                            <option value="gr">gr</option>
+                            <option value="ml">ml</option>
+                            <option value="l">l</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeAddedFood(index, foodIndex)
+                          }
+                          className="rounded-md border border-red-500 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        >
+                          Remover alimento
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="md:col-span-2 flex gap-3">
+
                 <button
                   type="button"
                   onClick={() => removeItem(index)}
                   className="rounded-md border border-red-500 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                 >
-                  Remover refeição
+                  Remover alimento
                 </button>
               </div>
+
+              <div className="md:col-span-2">
+                <label className="text-base font-serif">
+                  <input
+                    type="checkbox"
+                    checked={item.send_notification}
+                    onChange={(e) =>
+                      setItemField(
+                        index,
+                        "send_notification",
+                        e.target.checked
+                      )
+                    }
+                    className="mr-2 h-4 w-4"
+                  />
+                  Enviar notificação ao paciente
+                </label>
+              </div>
             </div>
-          ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+})}
 
           <div className="flex flex-col justify-center gap-3 pt-8 md:flex-row md:justify-between">
             <button
