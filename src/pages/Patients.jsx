@@ -115,7 +115,10 @@ export default function Patients() {
       <div key={`actions-${patientId}`} className="flex items-center gap-2">
         <button
           type="button"
-          onClick={() => nav(`/pacientes/${patientId}/editar`)}
+          onClick={(e) => {
+            e.stopPropagation();
+            nav(`/pacientes/${patientId}/editar`);
+          }}
           className="text-sf-green border border-green-600 px-2 py-[2px] rounded"
         >
           Editar
@@ -123,7 +126,10 @@ export default function Patients() {
 
         <button
           type="button"
-          onClick={() => nav(`/pacientes/${patientId}/matricula`)}
+          onClick={(e) => {
+            e.stopPropagation();
+            nav(`/pacientes/${patientId}/matricula`);
+          }}
           className="border border-blue-600 text-blue-600 px-2 py-[2px] rounded"
         >
           Matrícula
@@ -131,7 +137,10 @@ export default function Patients() {
 
         <button
           type="button"
-          onClick={() => handleDelete(p)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete(p);
+          }}
           className="border border-red-600 text-red-600 px-2 py-[2px] rounded"
         >
           Excluir
