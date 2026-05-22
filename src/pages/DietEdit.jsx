@@ -619,7 +619,7 @@ export default function DietEdit() {
                   <select
                     value={mealId}
                     onChange={(e) =>
-                      setItemField(index, "meals_id", e.target.value)
+                      setItemField(mealItems[0].originalIndex, "meals_id", e.target.value)
                     }
                     className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
                   >
