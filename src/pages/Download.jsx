@@ -10,12 +10,14 @@ import {
   ChevronRight,
   Info
 } from "lucide-react";
+import logo from "../assets/image.png";
 
 export default function DownloadPage() {
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
 
   const handleDownload = async () => {
     try {
@@ -100,7 +102,7 @@ export default function DownloadPage() {
       <header className="bg-white border-b border-black/[0.06] py-4 px-6 md:px-12 flex justify-between items-center shadow-xs">
         <div className="flex items-center gap-2.5">
           <div className="w-16 h-16 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
-            <img src="./src/assets/image.png" alt="Logo" width={100} height={100} />
+            <img src={logo} alt="Logo" width={100} height={100} />
           </div>
           <div>
             <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-zinc-400 block leading-none">Synchro Fit</span>
