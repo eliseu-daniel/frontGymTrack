@@ -27,6 +27,7 @@ import DietEdit from "./pages/DietEdit.jsx";
 import AnthropometryEdit from "./pages/AnthropometryEdit.jsx";
 import AnthropometryWeightUpdate from "./pages/AnthropometryWeightUpdate.jsx";
 import PatientsDetails from "./pages/PatientsDetails.jsx";
+import Download from "./pages/Download.jsx";
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -42,6 +43,7 @@ export default function App() {
       </Route>
 
       <Route path="/cadastro" element={<Register />} />
+      <Route path="/download" element={<Download />} />
 
       <Route
         element={
