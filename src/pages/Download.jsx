@@ -24,7 +24,6 @@ export default function DownloadPage() {
       setSuccess(false);
       setProgress(0);
 
-      // Chamada à API para baixar o arquivo APK
       const response = await api.get("/download", {
         responseType: "blob",
         onDownloadProgress: (progressEvent) => {
@@ -34,7 +33,6 @@ export default function DownloadPage() {
             );
             setProgress(percentCompleted);
           } else {
-            // Caso o cabeçalho Content-Length não esteja disponível, simulamos progresso gradual
             setProgress((prev) => {
               if (prev >= 90) return prev;
               return prev + 10;
@@ -45,7 +43,6 @@ export default function DownloadPage() {
 
       setProgress(100);
 
-      // Criação do link temporário para download
       const blob = new Blob([response.data], {
         type: "application/vnd.android.package-archive",
       });
@@ -56,14 +53,11 @@ export default function DownloadPage() {
       document.body.appendChild(link);
       link.click();
 
-      // Limpeza do DOM e de memória
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
 
       setSuccess(true);
     } catch (err) {
-      console.error("Erro ao baixar o APK:", err);
-      // Fallback em caso de erro da requisição Axios ou se precisar de link direto
       setError(
         "Não foi possível baixar o aplicativo automaticamente. Você pode tentar o download alternativo."
       );
@@ -74,7 +68,6 @@ export default function DownloadPage() {
 
   const handleAlternativeDownload = () => {
     const apiBaseUrl = import.meta.env.VITE_API_URL;
-    // Abre diretamente o link da API
     window.open(`${apiBaseUrl}/download`, "_blank");
   };
 
@@ -106,8 +99,8 @@ export default function DownloadPage() {
       {/* Cabeçalho de Branding Público */}
       <header className="bg-white border-b border-black/[0.06] py-4 px-6 md:px-12 flex justify-between items-center shadow-xs">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-            SF
+          <div className="w-16 h-16 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
+            <img src="./src/assets/image.png" alt="Logo" width={100} height={100} />
           </div>
           <div>
             <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-zinc-400 block leading-none">Synchro Fit</span>
@@ -165,12 +158,6 @@ export default function DownloadPage() {
                     <h3 className="font-serif text-xl tracking-wider uppercase font-semibold leading-tight">
                       Synchro Fit
                     </h3>
-                    <p className="text-[11px] uppercase tracking-widest text-emerald-300 font-sans mt-0.5">
-                      Mobile App v2
-                    </p>
-                  </div>
-                  <div className="px-3 py-1 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-[10px] text-emerald-300 tracking-wide font-sans">
-                    Pronto para Android
                   </div>
                 </div>
 
@@ -203,7 +190,7 @@ export default function DownloadPage() {
                   Obter para Android (APK)
                 </h2>
                 <p className="text-sm text-zinc-650 mt-1 leading-relaxed">
-                  Gerencie seus treinos, acompanhe suas dietas recomendadas e envie feedbacks em tempo real diretamente de seu celular com o aplicativo oficial da plataforma.
+                  Acompanhe suas dietas e treinos recomendadas e envie feedbacks em tempo real diretamente de seu celular com o aplicativo oficial da plataforma.
                 </p>
               </div>
 
