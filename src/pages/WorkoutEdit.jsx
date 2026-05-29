@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../services/api";
 
-const EMPTY_ITEM = {
+const EMPTY_EXERCISE = {
   workout_item_id: null,
   exercise_id: "",
   series: "",
@@ -10,8 +10,13 @@ const EMPTY_ITEM = {
   weight_load: "",
   rest_time: "",
   duration_time: "",
+  send_notification: false,
+};
+
+const EMPTY_DAY = {
   day_of_week: "1",
   send_notification: false,
+  exercises: [{ ...EMPTY_EXERCISE }],
 };
 
 export default function WorkoutEdit() {
@@ -35,7 +40,7 @@ export default function WorkoutEdit() {
     finalized_at: "",
   });
 
-  const [items, setItems] = useState([{ ...EMPTY_ITEM }]);
+  const [items, setItems] = useState([{ ...EMPTY_DAY }]);
 
   useEffect(() => {
     loadInitialData();
@@ -94,11 +99,11 @@ export default function WorkoutEdit() {
 
       const currentWorkoutItems = Array.isArray(workoutItemsData)
         ? workoutItemsData
-            .filter(
-              (item) =>
-                String(item.workout_id ?? item.workout?.id) === String(id)
-            )
-            .filter((item) => isActiveItem(item))
+          .filter(
+            (item) =>
+              String(item.workout_id ?? item.workout?.id) === String(id)
+          )
+          .filter((item) => isActiveItem(item))
         : [];
 
       setPatients(Array.isArray(patientsData) ? patientsData : []);
@@ -120,8 +125,17 @@ export default function WorkoutEdit() {
       });
 
       if (currentWorkoutItems.length > 0) {
-        setItems(
-          currentWorkoutItems.map((item) => ({
+        const groupedByDay = {};
+        currentWorkoutItems.forEach((item) => {
+          const day = String(item.day_of_week ?? "1");
+          if (!groupedByDay[day]) {
+            groupedByDay[day] = {
+              day_of_week: day,
+              send_notification: Boolean(item.send_notification),
+              exercises: [],
+            };
+          }
+          groupedByDay[day].exercises.push({
             workout_item_id: item.workout_item_id ?? item.id ?? null,
             exercise_id: String(item.exercise_id ?? ""),
             series: item.series ?? "",
@@ -129,12 +143,11 @@ export default function WorkoutEdit() {
             weight_load: item.weight_load ?? "",
             rest_time: item.rest_time ?? "",
             duration_time: item.duration_time ?? "",
-            day_of_week: String(item.day_of_week ?? "1"),
-            send_notification: Boolean(item.send_notification),
-          }))
-        );
+          });
+        });
+        setItems(Object.values(groupedByDay));
       } else {
-        setItems([{ ...EMPTY_ITEM }]);
+        setItems([{ ...EMPTY_DAY }]);
       }
     } catch (error) {
       alert("Não foi possível carregar os dados do treino.");
@@ -161,31 +174,85 @@ export default function WorkoutEdit() {
     }));
   }
 
-  function setItemField(index, field, value) {
+  function updateItem(index, field, value) {
     setItems((prev) =>
       prev.map((item, i) =>
         i === index
           ? {
-              ...item,
-              [field]: value,
-            }
+            ...item,
+            [field]: value,
+          }
+          : item
+      )
+    );
+  }
+
+  function updateExercise(itemIndex, exerciseIndex, field, value) {
+    setItems((prev) =>
+      prev.map((item, i) =>
+        i === itemIndex
+          ? {
+            ...item,
+            exercises: item.exercises.map((exercise, j) =>
+              j === exerciseIndex
+                ? { ...exercise, [field]: value }
+                : exercise
+            ),
+          }
+          : item
+      )
+    );
+  }
+
+  function addExerciseToItem(index) {
+    setItems((prev) =>
+      prev.map((item, i) =>
+        i === index
+          ? {
+            ...item,
+            exercises: [...item.exercises, { ...EMPTY_EXERCISE }],
+          }
+          : item
+      )
+    );
+  }
+
+  function removeExercise(itemIndex, exerciseIndex) {
+    setItems((prev) =>
+      prev.map((item, i) =>
+        i === itemIndex
+          ? {
+            ...item,
+            exercises: item.exercises.filter((_, j) => j !== exerciseIndex),
+          }
           : item
       )
     );
   }
 
   function addItem() {
-    setItems((prev) => [...prev, { ...EMPTY_ITEM }]);
+    setItems((prev) => [
+      ...prev,
+      {
+        day_of_week: "1",
+        send_notification: false,
+        exercises: [{ ...EMPTY_EXERCISE }],
+      },
+    ]);
   }
 
   function removeItem(index) {
-    setItems((prev) => {
-      if (prev.length === 1) return prev;
+    if (items.length === 1) return;
 
+    setItems((prev) => {
       const itemToRemove = prev[index];
 
-      if (itemToRemove?.workout_item_id) {
-        setRemovedItems((old) => [...old, itemToRemove]);
+      if (itemToRemove?.exercises) {
+        itemToRemove.exercises.forEach((exercise) => {
+          if (exercise?.workout_item_id) {
+            setRemovedItems((old) => [...old, exercise]);
+          }
+        });
       }
 
       return prev.filter((_, i) => i !== index);
@@ -236,14 +303,22 @@ export default function WorkoutEdit() {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
 
-      if (!item.exercise_id) {
-        alert(`Selecione o exercício do item ${i + 1}.`);
-        return false;
-      }
-
       if (!item.day_of_week) {
         alert(`Selecione o dia da semana do item ${i + 1}.`);
         return false;
+      }
+
+      if (!item.exercises || item.exercises.length === 0) {
+        alert(`Adicione pelo menos um exercício no item ${i + 1}.`);
+        return false;
+      }
+
+      for (let j = 0; j < item.exercises.length; j++) {
+        const exercise = item.exercises[j];
+        if (!exercise.exercise_id) {
+          alert(`Selecione o exercício ${j + 1} do item ${i + 1}.`);
+          return false;
+        }
       }
     }
 
@@ -270,62 +345,72 @@ export default function WorkoutEdit() {
 
       await api.put(`/educators/workouts/${id}`, workoutPayload);
 
-      for (const item of items) {
-        const itemPayload = {
-          workout_id: Number(id),
-          exercise_id: Number(item.exercise_id),
-          day_of_week: Number(item.day_of_week),
-          series: item.series ? Number(item.series) : null,
-          repetitions: item.repetitions ? Number(item.repetitions) : null,
-          weight_load: item.weight_load ? Number(item.weight_load) : null,
-          duration_time: item.duration_time ? Number(item.duration_time) : null,
-          rest_time: item.rest_time ? Number(item.rest_time) : null,
-          send_notification: item.send_notification,
-          is_active: true,
-        };
+      const allRequests = [];
+      items.forEach((item) => {
+        item.exercises.forEach((exercise) => {
+          const itemPayload = {
+            workout_id: Number(id),
+            exercise_id: Number(exercise.exercise_id),
+            day_of_week: Number(item.day_of_week),
+            series: exercise.series ? Number(exercise.series) : null,
+            repetitions: exercise.repetitions ? Number(exercise.repetitions) : null,
+            weight_load: exercise.weight_load ? Number(exercise.weight_load) : null,
+            duration_time: exercise.duration_time ? Number(exercise.duration_time) : null,
+            rest_time: exercise.rest_time ? Number(exercise.rest_time) : null,
+            send_notification: item.send_notification,
+            is_active: true,
+          };
 
-        if (item.workout_item_id) {
-          await api.put(
-            `/educators/workout-items/${item.workout_item_id}`,
-            itemPayload
-          );
-        } else {
-          await api.post("/educators/workout-items", itemPayload);
-        }
-      }
+          if (exercise.workout_item_id) {
+            allRequests.push(
+              api.put(
+                `/educators/workout-items/${exercise.workout_item_id}`,
+                itemPayload
+              )
+            );
+          } else {
+            allRequests.push(api.post("/educators/workout-items", itemPayload));
+          }
+        });
+      });
 
       for (const removedItem of removedItems) {
-        await api.put(
-          `/educators/workout-items/${removedItem.workout_item_id}`,
-          {
-            workout_id: Number(id),
-            exercise_id: Number(removedItem.exercise_id),
-            day_of_week: Number(removedItem.day_of_week),
-            series: removedItem.series ? Number(removedItem.series) : null,
-            repetitions: removedItem.repetitions
-              ? Number(removedItem.repetitions)
-              : null,
-            weight_load: removedItem.weight_load
-              ? Number(removedItem.weight_load)
-              : null,
-            duration_time: removedItem.duration_time
-              ? Number(removedItem.duration_time)
-              : null,
-            rest_time: removedItem.rest_time
-              ? Number(removedItem.rest_time)
-              : null,
-            send_notification: Boolean(removedItem.send_notification),
-            is_active: false,
-          }
+        const itemPayload = {
+          workout_id: Number(id),
+          exercise_id: Number(removedItem.exercise_id),
+          day_of_week: Number(removedItem.day_of_week),
+          series: removedItem.series ? Number(removedItem.series) : null,
+          repetitions: removedItem.repetitions
+            ? Number(removedItem.repetitions)
+            : null,
+          weight_load: removedItem.weight_load
+            ? Number(removedItem.weight_load)
+            : null,
+          duration_time: removedItem.duration_time
+            ? Number(removedItem.duration_time)
+            : null,
+          rest_time: removedItem.rest_time
+            ? Number(removedItem.rest_time)
+            : null,
+          send_notification: Boolean(removedItem.send_notification),
+          is_active: false,
+        };
+        allRequests.push(
+          api.put(
+            `/educators/workout-items/${removedItem.workout_item_id}`,
+            itemPayload
+          )
         );
       }
+
+      await Promise.all(allRequests);
 
       alert("Treino atualizado com sucesso!");
       nav("/treinos");
     } catch (error) {
       alert(
         error?.response?.data?.message ||
-          "Não foi possível atualizar o treino."
+        "Não foi possível atualizar o treino."
       );
     } finally {
       setSaving(false);
@@ -438,145 +523,19 @@ export default function WorkoutEdit() {
         </div>
 
         <div className="bg-sf-panel rounded-md shadow-soft p-6">
-          <div className="mb-4">
-            <button
-              type="button"
-              onClick={addItem}
-              className="rounded-md bg-sf-greenDark px-4 py-2 text-sm text-white hover:bg-sf-green"
-            >
-              Adicionar exercício
-            </button>
-          </div>
-
-          {items.map((item, index) => {
-            const selectedExercise = getExerciseById(item.exercise_id);
-            const exerciseLink = selectedExercise?.link_exercise ?? "";
-            const muscleGroupName =
-              selectedExercise?.muscle_group_name ??
-              selectedExercise?.muscle_group?.name ??
-              "";
-
-            return (
+          <div className="space-y-6">
+            {items.map((item, itemIndex) => (
               <div
-                key={item.workout_item_id ?? index}
-                className="mb-6 rounded-md border border-gray-300 p-4 last:mb-0"
+                key={itemIndex}
+                className="border-b border-gray-300 pb-6 last:border-b-0"
               >
-                <div className="mb-3">
-                  <h2 className="font-serif text-xl">Exercício {index + 1}</h2>
+                <div className="mb-4">
+                  <h2 className="font-serif text-xl">
+                    Dia {itemIndex + 1}
+                  </h2>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-base font-serif">
-                      Exercício
-                    </label>
-                    <select
-                      value={item.exercise_id}
-                      onChange={(e) =>
-                        setItemField(index, "exercise_id", e.target.value)
-                      }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                    >
-                      <option value="">Selecione</option>
-                      {exercises.map((exercise) => (
-                        <option
-                          key={getExerciseId(exercise)}
-                          value={getExerciseId(exercise)}
-                        >
-                          {getExerciseName(exercise)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-base font-serif">
-                      Séries
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.series}
-                      onChange={(e) =>
-                        setItemField(index, "series", e.target.value)
-                      }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-base font-serif">
-                      Repetições
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.repetitions}
-                      onChange={(e) =>
-                        setItemField(index, "repetitions", e.target.value)
-                      }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-base font-serif">
-                      Carga
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={item.weight_load}
-                      onChange={(e) =>
-                        setItemField(index, "weight_load", e.target.value)
-                      }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-base font-serif">
-                      Tempo de Descanso
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={item.rest_time}
-                      onChange={(e) =>
-                        setItemField(index, "rest_time", e.target.value)
-                      }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-base font-serif">
-                      Grupo Muscular
-                    </label>
-                    <input
-                      type="text"
-                      value={muscleGroupName}
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                      readOnly
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-base font-serif">
-                      Duração / Tempo
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={item.duration_time}
-                      onChange={(e) =>
-                        setItemField(index, "duration_time", e.target.value)
-                      }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                    />
-                  </div>
-
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-6">
                   <div>
                     <label className="mb-1 block text-base font-serif">
                       Dia da Semana
@@ -584,7 +543,7 @@ export default function WorkoutEdit() {
                     <select
                       value={item.day_of_week}
                       onChange={(e) =>
-                        setItemField(index, "day_of_week", e.target.value)
+                        updateItem(itemIndex, "day_of_week", e.target.value)
                       }
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
                     >
@@ -598,49 +557,213 @@ export default function WorkoutEdit() {
                     </select>
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="mb-1 block text-base font-serif">
-                      Link
-                    </label>
-                    <input
-                      type="text"
-                      value={exerciseLink}
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
-                      readOnly
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="text-base font-serif">
+                  <div>
+                    <label className="text-base font-serif block mb-1">
                       <input
                         type="checkbox"
                         checked={item.send_notification}
                         onChange={(e) =>
-                          setItemField(
-                            index,
+                          updateItem(
+                            itemIndex,
                             "send_notification",
                             e.target.checked
                           )
                         }
                         className="mr-2 h-4 w-4"
                       />
-                      Enviar notificação ao paciente
+                      Enviar notificação ao paciente (para todos os exercícios)
                     </label>
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-4">
+                <div className="space-y-4">
+                  {item.exercises.map((exercise, exerciseIndex) => {
+                    const selectedExercise = getExerciseById(exercise.exercise_id);
+                    const exerciseLink = selectedExercise?.link_exercise ?? "";
+                    const muscleGroupName =
+                      selectedExercise?.muscle_group_name ??
+                      selectedExercise?.muscle_group?.name ??
+                      "";
+
+                    return (
+                      <div
+                        key={exerciseIndex}
+                        className="bg-gray-50 p-4 rounded-md border border-gray-200"
+                      >
+                        <div className="mb-4 flex justify-between items-center">
+                          <h3 className="font-serif text-lg">
+                            Exercício {exerciseIndex + 1}
+                          </h3>
+                          {item.exercises.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeExercise(itemIndex, exerciseIndex)}
+                              className="text-red-600 hover:text-red-800 text-sm"
+                            >
+                              ✕ Remover
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                          <div>
+                            <label className="mb-1 block text-base font-serif">
+                              Exercício
+                            </label>
+                            <select
+                              value={exercise.exercise_id}
+                              onChange={(e) =>
+                                updateExercise(itemIndex, exerciseIndex, "exercise_id", e.target.value)
+                              }
+                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                            >
+                              <option value="">Selecione</option>
+                              {exercises.map((ex) => (
+                                <option
+                                  key={getExerciseId(ex)}
+                                  value={getExerciseId(ex)}
+                                >
+                                  {getExerciseName(ex)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-base font-serif">
+                              Séries
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={exercise.series}
+                              onChange={(e) =>
+                                updateExercise(itemIndex, exerciseIndex, "series", e.target.value)
+                              }
+                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-base font-serif">
+                              Repetições
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={exercise.repetitions}
+                              onChange={(e) =>
+                                updateExercise(itemIndex, exerciseIndex, "repetitions", e.target.value)
+                              }
+                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-base font-serif">
+                              Carga
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={exercise.weight_load}
+                              onChange={(e) =>
+                                updateExercise(itemIndex, exerciseIndex, "weight_load", e.target.value)
+                              }
+                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-base font-serif">
+                              Tempo de Descanso
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={exercise.rest_time}
+                              onChange={(e) =>
+                                updateExercise(itemIndex, exerciseIndex, "rest_time", e.target.value)
+                              }
+                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-base font-serif">
+                              Grupo Muscular
+                            </label>
+                            <input
+                              type="text"
+                              value={muscleGroupName}
+                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                              readOnly
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-base font-serif">
+                              Duração / Tempo
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={exercise.duration_time}
+                              onChange={(e) =>
+                                updateExercise(itemIndex, exerciseIndex, "duration_time", e.target.value)
+                              }
+                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                            />
+                          </div>
+
+                          <div className="md:col-span-2">
+                            <label className="mb-1 block text-base font-serif">
+                              Link
+                            </label>
+                            <input
+                              type="text"
+                              value={exerciseLink}
+                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+                              readOnly
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex justify-between items-center pt-4">
                   <button
                     type="button"
-                    onClick={() => removeItem(index)}
-                    className="rounded-md border border-red-500 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    onClick={() => addExerciseToItem(itemIndex)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-sf-greenDark text-xl text-white hover:bg-sf-green"
+                    title="Adicionar exercício neste dia"
                   >
-                    Remover exercício
+                    +
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => removeItem(itemIndex)}
+                    className="rounded-md border border-red-500 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
+                  >
+                    Remover dia
                   </button>
                 </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={addItem}
+            className="mt-4 flex h-10 w-10 items-center justify-center rounded-full bg-sf-greenDark text-xl text-white hover:bg-sf-green"
+            title="Adicionar dia"
+          >
+            +
+          </button>
 
           <div className="flex flex-col justify-center gap-3 pt-8 md:flex-row md:justify-between">
             <button
