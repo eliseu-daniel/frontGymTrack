@@ -49,9 +49,9 @@ export default function WorkoutCreate() {
       prev.map((item, i) =>
         i === index
           ? {
-              ...item,
-              [field]: value,
-            }
+            ...item,
+            [field]: value,
+          }
           : item
       )
     );
@@ -189,21 +189,23 @@ export default function WorkoutCreate() {
         throw new Error("Não foi possível obter o ID do treino criado.");
       }
 
-      for (const item of items) {
-        const workoutItemPayload = {
-          workout_id: Number(workoutId),
-          exercise_id: Number(item.exercise_id),
-          day_of_week: Number(item.day_of_week),
-          series: item.series ? Number(item.series) : null,
-          repetitions: item.repetitions ? Number(item.repetitions) : null,
-          weight_load: item.weight_load ? Number(item.weight_load) : null,
-          duration_time: item.duration_time ? Number(item.duration_time) : null,
-          rest_time: item.rest_time ? Number(item.rest_time) : null,
-          send_notification: item.send_notification,
-        };
+      await Promise.all(
+        items.map((item) => {
+          const workoutItemPayload = {
+            workout_id: Number(workoutId),
+            exercise_id: Number(item.exercise_id),
+            day_of_week: Number(item.day_of_week),
+            series: item.series ? Number(item.series) : null,
+            repetitions: item.repetitions ? Number(item.repetitions) : null,
+            weight_load: item.weight_load ? Number(item.weight_load) : null,
+            duration_time: item.duration_time ? Number(item.duration_time) : null,
+            rest_time: item.rest_time ? Number(item.rest_time) : null,
+            send_notification: item.send_notification,
+          };
 
-        await api.post("/educators/workout-items", workoutItemPayload);
-      }
+          return api.post("/educators/workout-items", workoutItemPayload);
+        })
+      );
 
       alert("Treino cadastrado com sucesso!");
       nav("/treinos");
@@ -494,16 +496,16 @@ export default function WorkoutCreate() {
                       </Field>
                     </div>
 
-                     <div className="md:col-span-2">
-                    <button
-                      type="button"
-                      onClick={() => addWorkoutToItem(index)}
-                      className="mt-4 flex h-10 w-10 items-center justify-center rounded-full bg-sf-greenDark text-xl text-white hover:bg-sf-green"
-                      title="Adicionar exercício"
-                    >
-                      +
-                    </button>
-                  </div>
+                    <div className="md:col-span-2">
+                      <button
+                        type="button"
+                        onClick={() => addWorkoutToItem(index)}
+                        className="mt-4 flex h-10 w-10 items-center justify-center rounded-full bg-sf-greenDark text-xl text-white hover:bg-sf-green"
+                        title="Adicionar exercício"
+                      >
+                        +
+                      </button>
+                    </div>
 
                     <div className="md:col-span-2">
                       <label className="text-base font-serif">
@@ -522,7 +524,7 @@ export default function WorkoutCreate() {
                         Enviar notificação ao paciente
                       </label>
                     </div>
-                    
+
                   </div>
 
                   <div className="flex justify-end pt-4">
@@ -534,7 +536,7 @@ export default function WorkoutCreate() {
                       Remover item
                     </button>
                   </div>
-                  
+
                 </div>
               );
             })}
