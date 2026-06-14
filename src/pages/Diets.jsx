@@ -71,22 +71,9 @@ export default function Diets() {
     if (!confirmed) return;
 
     try {
-      try {
-        await api.delete(`/educators/diets/${dietId}`);
-      } catch (err) {
-        alert(
-          "Não foi possível excluir/finalizar a dieta na API. Ela será ocultada nesta tela, mas pode aparecer novamente caso a API retorne os dados dela em algum momento."
-        );
-      }
+      await api.delete(`/educators/diets/${dietId}`);
 
-      // setHiddenDietIds((prev) => {
-      //   if (prev.includes(dietId)) return prev;
-
-      //   const next = [...prev, dietId];
-      //   localStorage.setItem("hiddenDiets", JSON.stringify(next));
-      //   return next;
-      // });
-
+      await fetchDiets();
       alert("Dieta excluída com sucesso!");
     } catch (error) {
       alert("Não foi possível excluir a dieta.");
