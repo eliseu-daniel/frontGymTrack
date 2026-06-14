@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Table from "../components/Table";
 import { usePatients } from "../contexts/PatientsContext.jsx";
@@ -8,11 +8,9 @@ import { useAuth } from "../contexts/AuthContext.jsx";
 export default function Patients() {
   const nav = useNavigate();
   const { user } = useAuth();
-  const { patients, loading, fetchPatients } = usePatients();
+  const { patients, loading, fetchPatients, deletePatient } = usePatients();
   const { registrations, fetchRegistrations, loading: registrationsLoading } =
     useRegistrations();
-
-  const [hiddenPatientIds, setHiddenPatientIds] = useState([]);
 
   useEffect(() => {
     if (!user) return;
@@ -21,30 +19,17 @@ export default function Patients() {
     fetchRegistrations();
   }, [user]);
 
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("hiddenPatients") ?? "[]");
-      if (Array.isArray(saved)) {
-        setHiddenPatientIds(saved.map((id) => String(id)));
-      }
-    } catch {
-      setHiddenPatientIds([]);
-    }
-  }, []);
-
-  const handleDelete = (p) => {
+  const handleDelete = async (p) => {
     const id = p.id ?? p.patient_id;
-    const stringId = String(id);
 
     const confirmDelete = window.confirm("Deseja excluir este paciente?");
     if (!confirmDelete) return;
 
-    setHiddenPatientIds((prev) => {
-      if (prev.includes(stringId)) return prev;
-      const next = [...prev, stringId];
-      localStorage.setItem("hiddenPatients", JSON.stringify(next));
-      return next;
-    });
+    try {
+      await deletePatient(id);
+    } catch (error) {
+      alert("Erro ao excluir paciente.");
+    }
   };
 
   const columns = [
@@ -84,7 +69,6 @@ export default function Patients() {
   const orderedPatients = useMemo(() => {
     return (patients ?? [])
       .filter((p) => (p.is_active ?? p.ativo ?? 1) == 1)
-      .filter((p) => !hiddenPatientIds.includes(String(p.id ?? p.patient_id)))
       .sort((a, b) => {
         const aId = String(a.id ?? a.patient_id);
         const bId = String(b.id ?? b.patient_id);
@@ -97,7 +81,7 @@ export default function Patients() {
 
         return 0;
       });
-  }, [patients, hiddenPatientIds, registrationsByPatientId]);
+  }, [patients, registrationsByPatientId]);
 
   const patientIds = orderedPatients.map((p) => p.id ?? p.patient_id);
 
