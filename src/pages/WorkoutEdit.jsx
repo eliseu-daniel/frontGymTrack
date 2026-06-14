@@ -408,10 +408,10 @@ export default function WorkoutEdit() {
       alert("Treino atualizado com sucesso!");
       nav("/treinos");
     } catch (error) {
-      // alert(
-      //   error?.response?.data?.message ||
-      //   "Não foi possível atualizar o treino."
-      // );
+      alert(
+        error?.response?.data?.message ||
+        "Não foi possível atualizar o treino."
+      );
     } finally {
       setSaving(false);
     }
